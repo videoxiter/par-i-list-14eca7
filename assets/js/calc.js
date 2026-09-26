@@ -13,6 +13,8 @@
   };
   const MODEL_PHOTO_SLUG = { k2: "k3", k3: "k3", k4: "k4", k5: "k5", k6: "k6", tank: "tank" };
   const rub = v => (Math.round(v) || 0).toLocaleString("ru-RU").replace(/\u00a0/g, " ") + " ₽";
+  const GAL_VISIBLE = 8;                       // сколько фото видно в блоке результата
+  const GAL = { shown: 0, total: 0 };
 
   const S = {
     modelId: "k4", kit: "люкс", material: "ель", tankLen: 4, extraLen: 0, extraSection: false,
@@ -26,6 +28,101 @@
   const model = () => S.modelId === "tank" ? D.tank : D.models.find(m => m.id === S.modelId);
   const isTank = () => S.modelId === "tank";
   const photoSlug = () => MODEL_PHOTO_SLUG[S.modelId] || "k3";
+
+  /* ── галерея результата: набор фото зависит от выбора ─────────────────── */
+  function hashSel() {
+    const opts = Object.keys(S.options).filter(k => S.options[k]);
+    const seed = [S.modelId, S.kit, S.material, isTank() ? S.tankLen : "", S.extraLen,
+                  S.extraSection, S.veranda, S.verandaType, S.trailer, S.straps,
+                  S.buildOnSite, opts.join(",")].join("|");
+    let h = 7;
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 99991;
+    return h;
+  }
+
+  function modelLabel() {
+    if (isTank()) return `Баня «Танк» ${S.tankLen.toString().replace(".", ",")}×2,4 м`;
+    const m = model();
+    if (S.modelId === "k2") return "Квадро 2×2 м (фото 3-метровой модели — форма и отделка те же)";
+    return m.name;
+  }
+
+  const MOUNT = mediaSlug => ((D.media || {})[mediaSlug] || {}).photos || [];
+
+  // группы фото под текущий выбор: модель — основная, веранда/прицеп/сборка/опции — доп. плитки
+  function galGroups() {
+    const gs = [];
+    const kitName = "комплектация «" + KIT_TITLES[S.kit] + "»" + (S.material === "кедр" ? ", кедр" : ", ель «А»");
+    gs.push({ slug: "model", cap: modelLabel() + ", " + kitName, photos: MOUNT(photoSlug()) });
+    if (S.veranda > 0) gs.push({ slug: "veranda", cap: "Веранда (терраса) " + S.veranda + " м²", photos: MOUNT("veranda") });
+    if (S.trailer) gs.push({ slug: "pricep", cap: "Баня на прицепе «БАРС»", photos: MOUNT("pricep") });
+    if (S.buildOnSite !== "none") gs.push({ slug: "proizvodstvo", cap: "Сборка бани на участке", photos: MOUNT("proizvodstvo") });
+    if (Object.keys(S.options).some(k => S.options[k])) gs.push({ slug: "komplekt", cap: "Внутри бани: отделка и опции", photos: MOUNT("komplekt") });
+    return gs.filter(g => g.photos.length);
+  }
+
+  const rotate = (arr, off) => arr.slice(off).concat(arr.slice(0, off));
+
+  function groupOffset(slug, len, want) {
+    if (len <= want) return 0;
+    let h = 7;
+    const seed = [slug, S.modelId, S.kit, S.material, S.veranda, S.verandaType, S.trailer,
+                  S.buildOnSite, isTank() ? S.tankLen : "", S.extraLen, S.extraSection,
+                  Object.keys(S.options).filter(k => S.options[k]).join(",")].join("|");
+    for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) % 99991;
+    return h % (len - want + 1);
+  }
+
+  // сколько плиток показать: основная группа — большинство, доп. разделы — по несколько
+  function galItems(count) {
+    const gs = galGroups();
+    const out = [];
+    if (!gs.length) return out;
+    const extras = gs.slice(1);
+    const extraShare = extras.length ? Math.max(1, Math.round((count * 0.35) / extras.length)) : 0;
+    const baseShare = Math.max(1, count - extraShare * extras.length);
+    const push = (g, want) => {
+      if (want <= 0) return;
+      const off = groupOffset(g.slug, g.photos.length, want);
+      rotate(g.photos, off).slice(0, want).forEach(src => out.push({ src: src, cap: g.cap }));
+    };
+    push(gs[0], baseShare);
+    extras.forEach(g => push(g, extraShare));
+    // добор из основной группы, если доп. разделы длиннее нужного
+    if (out.length < count) {
+      const off = groupOffset(gs[0].slug + "-more", gs[0].photos.length, Math.max(1, Math.min(count, gs[0].photos.length)));
+      for (const src of rotate(gs[0].photos, off)) {
+        if (out.length >= count) break;
+        if (!out.some(x => x.src === src)) out.push({ src: src, cap: gs[0].cap });
+      }
+    }
+    return out.slice(0, count);
+  }
+
+  function galTotal() {
+    return galItems(999).length;
+  }
+
+  function galleryCaption() {
+    const parts = [modelLabel()];
+    parts.push("комплектация «" + KIT_TITLES[S.kit] + "»");
+    parts.push(S.material === "кедр" ? "кедр" : "ель «А»");
+    if (S.veranda > 0) parts.push("веранда");
+    if (S.trailer) parts.push("прицеп");
+    if (S.buildOnSite !== "none") parts.push("сборка на участке");
+    if (Object.keys(S.options).some(k => S.options[k])) parts.push("с опциями");
+    return "Фото под ваш выбор: " + parts.join(" · ");
+  }
+
+  function drawGallery() {
+    const gal = $("#resultGallery");
+    if (!gal) return;
+    const items = galItems(GAL.shown);
+    gal.dataset.items = JSON.stringify(items.map(x => ({ type: "photo", src: x.src, cap: x.cap })))
+      .replace(/'/g, "&#39;");
+    gal.innerHTML = items.map((x, i) =>
+      `<img src="${x.src}" alt="${x.cap}" title="${x.cap}" loading="lazy" decoding="async" data-i="${i}">`).join("");
+  }
 
   function kitKeys() {
     if (isTank()) return ["люкс", "премиум"];
@@ -214,10 +311,24 @@
     if (inсл) inсл.innerHTML = kitBullets().map(x => `<li>${x}</li>`).join("");
     if (ad) ad.textContent = adText();
     if (gal) {
-      const photos = ((D.media || {})[photoSlug()] || {}).photos || [];
-      gal.innerHTML = photos.slice(0, 6).map((src, i) =>
-        `<img src="${src}" alt="Баня-бочка ${i + 1}" loading="lazy" decoding="async"
-              data-photo="${photoSlug()}" data-idx="${i}">`).join("");
+      GAL.total = galTotal();
+      GAL.shown = Math.min(GAL_VISIBLE, GAL.total);
+      drawGallery();
+      const cap = $("#galCaption");
+      if (cap) cap.textContent = galleryCaption();
+      const more = $("#galleryMore");
+      if (more) {
+        more.style.display = "";
+        more.dataset.goto = "";
+        if (GAL.total > GAL.shown) {
+          more.textContent = "Показать ещё фото (" + Math.min(GAL_VISIBLE, GAL.total - GAL.shown) + ")";
+        } else if (GAL.total > 0) {
+          more.textContent = "Все подборки фото →";
+          more.dataset.goto = "galereya.html";
+        } else {
+          more.style.display = "none";
+        }
+      }
     }
     const routeBox = $("#routeBox");
     if (routeBox) {
@@ -387,14 +498,18 @@
       if (v.length >= 3 && v !== S.city) { S.city = v; calcRoute(v, null, null); }
     });
 
-    // показать больше фото
+    // показать больше фото / уйти в полную галерею
     $("#galleryMore").addEventListener("click", () => {
-      const photos = ((D.media || {})[photoSlug()] || {}).photos || [];
-      const gal = $("#resultGallery");
-      const from = gal.children.length;
-      gal.insertAdjacentHTML("beforeend", photos.slice(from, from + 6).map((src, i) =>
-        `<img src="${src}" alt="Баня-бочка" loading="lazy" decoding="async">`).join(""));
-      if (gal.children.length >= photos.length) $("#galleryMore").style.display = "none";
+      const more = $("#galleryMore");
+      if (more.dataset.goto) { location.href = more.dataset.goto; return; }
+      GAL.shown = Math.min(GAL.shown + GAL_VISIBLE, GAL.total);
+      drawGallery();
+      if (GAL.shown >= GAL.total) {
+        more.textContent = "Вся галерея фото и видео →";
+        more.dataset.goto = "galereya.html";
+      } else {
+        more.textContent = "Показать ещё фото (" + Math.min(GAL_VISIBLE, GAL.total - GAL.shown) + ")";
+      }
     });
 
     // печать и копирование
@@ -416,10 +531,15 @@
       }
     });
 
-    // лайтбокс на превью результата
+    // лайтбокс на превью результата (с пролистыванием)
     document.addEventListener("click", e => {
       const img = e.target.closest("#resultGallery img");
-      if (img && window.LB) window.LB.open(img.src, img.alt);
+      if (!img || !window.LB) return;
+      const gal = img.closest("#resultGallery");
+      let items = [];
+      try { items = JSON.parse(gal.dataset.items || "[]"); } catch (err) { items = []; }
+      if (items.length) window.LB.openSet(items, parseInt(img.dataset.i, 10) || 0);
+      else window.LB.open(img.src, img.alt);
     });
   }
 
