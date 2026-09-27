@@ -166,9 +166,10 @@ window.GEO = (function () {
   /* ── 5. Стоимость доставки ───────────────────────────────────────────── */
   function tariff(km, mode) {
     const t = CFG.tariffDefault;
-    if (mode === "legacy") return { rate: t.legacy, label: "65 ₽/км (тариф до 1 апреля)" };
-    if (km > 1000) return { rate: t.over1000, label: "75 ₽/км (свыше 1 000 км)" };
-    return { rate: t.to1000, label: "70 ₽/км (до 1 000 км)" };
+    if (mode === "65") return { rate: 65, label: "65 ₽/км (тариф вручную)" };
+    if (mode === "70") return { rate: 70, label: "70 ₽/км (тариф вручную)" };
+    if (km > 1000) return { rate: t.over1000, label: t.over1000 + " ₽/км (свыше 1 000 км)" };
+    return { rate: t.to1000, label: t.to1000 + " ₽/км (до 1 000 км)" };
   }
   function deliveryCost(km, mode) {
     const t = tariff(km, mode);

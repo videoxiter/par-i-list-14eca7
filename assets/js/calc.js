@@ -18,7 +18,8 @@
 
   const S = {
     modelId: "k4", kit: "люкс", material: "ель", tankLen: 4, extraLen: 0, extraSection: false,
-    trailer: false, straps: false, veranda: 0, verandaType: "roof", options: {},
+    widthPlusCm: 0, heightPlusCm: 0,
+    trailer: false, straps: false, veranda: 0, verandaType: "terrace", options: {},
     buildOnSite: "none", city: "", km: null, kmSource: "", kmManual: null, tariffMode: "auto",
     loading: false
   };
@@ -146,8 +147,8 @@
       rows.push({ label: `${m.name}, комплектация «${KIT_TITLES[S.kit]}»`, note: m.sections, value: bathBase });
       if (S.extraLen > 0) {
         const v = S.extraLen * 13000;
-        rows.push({ label: `Увеличение длины на ${(S.extraLen * 0.5).toFixed(1).replace(".0", "")} м`,
-                    note: "13 000 ₽ за каждые 0,5 м", value: v });
+        rows.push({ label: `Увеличение длины на ${(S.extraLen * 0.5).toFixed(1).replace(".", ",").replace(",0", "")} м`,
+                    note: "13 000 ₽, только один раз; дальше — следующий размер по прайсу", value: v });
         bathBase += v;
       }
     }
@@ -173,10 +174,26 @@
 
     // веранда
     if (S.veranda > 0) {
-      const rate = S.verandaType === "wall" ? 13000 : 13500;
-      rows.push({ label: `Веранда (терраса) ${S.veranda} м²`,
-                  note: S.verandaType === "wall" ? "крыша до стены бани, 13 000 ₽/м²" : "двускатная крыша, 13 500 ₽/м²",
-                  value: S.veranda * rate });
+      const VT = {
+        terrace: { r: 13500, n: "двускатная крыша — баня под крышей" },
+        wall: { r: 13000, n: "односкатная крыша, навес с одной стороны" },
+        open: { r: 9000, n: "без крыши: подиум и ограждение" },
+        podium: { r: 7000, n: "подиум без крыши и ограждения" }
+      };
+      const vt = VT[S.verandaType] || VT.terrace;
+      rows.push({ label: `Терраса ${S.veranda} м²`, note: `${vt.n}, ${rub(vt.r)}/м²`,
+                  value: S.veranda * vt.r });
+    }
+    // увеличение ширины и высоты (10 000 ₽ за каждые 10 см)
+    if (!isTank() && S.widthPlusCm > 0) {
+      const w = model().width + S.widthPlusCm / 100;
+      rows.push({ label: `Ширина бани +${S.widthPlusCm} см`,
+                  note: `10 000 ₽ за 10 см; ширина ${String(+w.toFixed(2)).replace(".", ",")} м`,
+                  value: (S.widthPlusCm / 10) * 10000 });
+    }
+    if (S.heightPlusCm > 0) {
+      rows.push({ label: `Высота бани +${S.heightPlusCm} см`, note: "10 000 ₽ за 10 см; стандарт 2,05 м",
+                  value: (S.heightPlusCm / 10) * 10000 });
     }
     // прицеп
     if (S.trailer) {
@@ -184,7 +201,7 @@
       if (S.straps) rows.push({ label: "Три стропы", note: "по 2 000 ₽", value: 6000 });
     }
     // сборка на участке
-    const buildPrices = { quadro: 10000, tank: 15000, terrace: 25000 };
+    const buildPrices = { quadro: 15000, tank: 20000, terrace: 30000 };
     if (S.buildOnSite !== "none") {
       const names = { quadro: "Сборка на участке, форма «Квадро» (1 день)",
                       tank: "Сборка на участке, форма «Танк»/«Овал» (2 дня)",
@@ -216,8 +233,10 @@
     } else {
       const m = model();
       const len = m.length + S.extraLen * 0.5;
-      size = `${len.toFixed(1).replace(".0", "")} × ${m.width} м`;
-      area = (len * m.width).toFixed(1) + " м²";
+      const wid = m.width + S.widthPlusCm / 100;
+      size = `${len.toFixed(1).replace(".0", "")} × ${String(+wid.toFixed(2)).replace(".", ",")} м` +
+             (S.heightPlusCm ? `, высота +${S.heightPlusCm} см` : "");
+      area = (len * wid).toFixed(1).replace(".", ",") + " м²";
       sections = m.sections + (S.extraSection ? " (+ доп. отделение)" : "");
     }
     return [
@@ -289,10 +308,16 @@
     }
     const sub = $("#sumSub");
     if (sub) {
-      sub.textContent = r.total
-        ? "Предварительная стоимость «под ключ» с доставкой. Итог подтверждает менеджер."
-        : "Выберите модель, комплектацию и населённый пункт доставки.";
+      if (r.total) {
+        const parts = [modelLabel(), "комплектация «" + KIT_TITLES[S.kit] + "»"];
+        if (S.material === "кедр") parts.push("кедр");
+        if (S.city) parts.push("доставка: " + S.city + (S.km ? " (" + S.km + " км)" : ""));
+        sub.textContent = parts.join(" · ") + " — предварительная стоимость «под ключ».";
+      } else {
+        sub.textContent = "Выберите модель, комплектацию и населённый пункт доставки.";
+      }
     }
+    syncUrl();
     if (brk) {
       let html = r.rows.map(x =>
         `<tr><td>${x.label}${x.note ? '<span class="note">' + x.note + "</span>" : ""}</td>
@@ -361,11 +386,23 @@
       <select id="tankLength">${[4, 4.5, 5, 5.5, 6].map(v =>
         `<option value="${v}"${v === S.tankLen ? " selected" : ""}>${v.toString().replace(".", ",")} м (ширина 2,4 м)</option>`).join("")}</select>`;
 
+    const wp = $("#widthPlusWrap");
+    if (wp) wp.innerHTML = `<label for="widthPlus">Увеличение ширины, см (только «Квадро»)</label>
+      <select id="widthPlus">${[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150].map(cm =>
+        `<option value="${cm}"${cm === S.widthPlusCm ? " selected" : ""}>${cm ? "+" + cm + " см — " + rub((cm / 10) * 10000) : "стандартная 2,0 м"}</option>`).join("")}</select>
+      <div class="hint">10 000 ₽ за каждые 10 см. Стандартная ширина — 2,0 м, максимум 3,5 м. Шире 2,40 м — только сборка на участке.</div>`;
+
+    const hp = $("#heightPlusWrap");
+    if (hp) hp.innerHTML = `<label for="heightPlus">Увеличение высоты, см («Квадро» и «Танк»)</label>
+      <select id="heightPlus">${[0, 10, 20, 30, 40].map(cm =>
+        `<option value="${cm}"${cm === S.heightPlusCm ? " selected" : ""}>${cm ? "+" + cm + " см — " + rub((cm / 10) * 10000) : "стандартная 2,05 м"}</option>`).join("")}</select>
+      <div class="hint">10 000 ₽ за каждые 10 см. Стандартная высота — 2,05 м наружная (1,95 м внутренняя), от трапа до потолка 190 см.</div>`;
+
     renderKits();
 
     const og = $("#optionsGroups");
     const groups = {};
-    D.options.filter(o => o.group !== "материал" && o.price).forEach(o => {
+    D.options.filter(o => o.group !== "материал" && o.price && !o.calcOnly).forEach(o => {
       (groups[o.group] = groups[o.group] || []).push(o);
     });
     og.innerHTML = Object.keys(groups).map(g =>
@@ -377,9 +414,9 @@
 
     const bs = $("#buildSelect");
     bs.innerHTML = `<option value="none">Не нужна (доставка в собранном виде)</option>
-      <option value="quadro">Квадро — 10 000 ₽ (1 день)</option>
-      <option value="tank">Танк / Овал — 15 000 ₽ (2 дня)</option>
-      <option value="terrace">С террасой — 25 000 ₽ (2 дня)</option>`;
+      <option value="quadro">Квадро — 15 000 ₽ (1 день)</option>
+      <option value="tank">Танк / Овал — 20 000 ₽ (2 дня)</option>
+      <option value="terrace">С террасой — 30 000 ₽ (2 дня)</option>`;
   }
 
   function renderKits() {
@@ -396,6 +433,10 @@
     const canExtraSection = isTank() ? S.tankLen >= 5 : (m.length >= 5);
     $("#extraSectionWrap").style.display = canExtraSection ? "block" : "none";
     if (!canExtraSection) S.extraSection = false;
+    const wpw = $("#widthPlusWrap");
+    if (wpw) wpw.style.display = isTank() ? "none" : "block";
+    const hpw = $("#heightPlusWrap");
+    if (hpw) hpw.style.display = "block";
     // прицеп только для бань 3 и 4 м
     const len = isTank() ? S.tankLen : m.length + S.extraLen * 0.5;
     const canTrailer = !isTank() && (len <= 4.5);
@@ -446,6 +487,8 @@
       else if (t.name === "kit") { S.kit = t.value; render(); }
       else if (t.name === "material") { S.material = t.value; syncVisibility(); render(); }
       else if (t.id === "extraLen") { S.extraLen = parseInt(t.value, 10); render(); }
+      else if (t.id === "widthPlus") { S.widthPlusCm = parseInt(t.value, 10) || 0; render(); }
+      else if (t.id === "heightPlus") { S.heightPlusCm = parseInt(t.value, 10) || 0; render(); }
       else if (t.id === "extraSection") { S.extraSection = t.checked; render(); }
       else if (t.id === "trailerChk") { S.trailer = t.checked; render(); }
       else if (t.id === "strapsChk") { S.straps = t.checked; render(); }
@@ -543,9 +586,38 @@
     });
   }
 
+  /* ── текущий расчёт в адресной строке: ссылкой можно поделиться ───────── */
+  function syncUrl() {
+    try {
+      const p = new URLSearchParams();
+      p.set("model", S.modelId);
+      p.set("kit", S.kit);
+      if (S.material === "кедр") p.set("mat", "кедр");
+      if (isTank()) p.set("len", String(S.tankLen));
+      else if (S.extraLen) p.set("extra", String(S.extraLen));
+      if (S.extraSection) p.set("sec", "1");
+      if (S.widthPlusCm) p.set("w", String(S.widthPlusCm));
+      if (S.heightPlusCm) p.set("h", String(S.heightPlusCm));
+      if (S.veranda) { p.set("ver", String(S.veranda)); p.set("vt", S.verandaType); }
+      if (S.trailer) p.set("tr", "1");
+      if (S.buildOnSite !== "none") p.set("build", S.buildOnSite);
+      Object.keys(S.options).forEach(k => { if (S.options[k]) p.set("o_" + k, "1"); });
+      if (S.city) { p.set("city", S.city); if (S.km) p.set("km", String(S.km)); }
+      const qs = p.toString();
+      if (location.search.replace(/^\?/, "") !== qs) {
+        history.replaceState(null, "", location.pathname + "?" + qs);
+      }
+    } catch (e) { /* ссылка — не критично */ }
+  }
+
   function init() {
     try {
-      // предвыбор модели/комплектации по ссылке: index.html?model=k5&kit=премиум
+      const st = $("#tariffSelect");
+      if (st) st.innerHTML =
+        `<option value="auto">65 ₽/км до 1 000 км, свыше — 70 ₽/км</option>
+         <option value="65">Принудительно 65 ₽/км</option>
+         <option value="70">Принудительно 70 ₽/км</option>`;
+      // предвыбор по ссылке: index.html?model=k5&kit=премиум&mat=кедр&ver=8&vt=open
       const q = new URLSearchParams(location.search);
       if (q.get("model") && (q.get("model") === "tank" || D.models.some(m => m.id === q.get("model")))) {
         S.modelId = q.get("model");
@@ -554,11 +626,26 @@
         else if (k) S.kit = k;
         else S.kit = kitKeys().indexOf("люкс") >= 0 ? "люкс" : kitKeys()[0];
       }
-      buildForm(); syncVisibility(); bind(); render();
-      const st = $("#tariffSelect");
-      if (st) st.innerHTML =
-        `<option value="auto">С 1 апреля: 70 ₽/км до 1 000 км, свыше — 75 ₽/км</option>
-         <option value="legacy">Старый тариф: 65 ₽/км</option>`;
+      if (q.get("mat") === "кедр") S.material = "кедр";
+      const qLen = parseFloat(q.get("len")); if (qLen) S.tankLen = qLen;
+      const qX = parseInt(q.get("extra"), 10); if (qX) S.extraLen = qX;
+      if (q.get("sec") === "1") S.extraSection = true;
+      const qW = parseInt(q.get("w"), 10); if (qW) S.widthPlusCm = qW;
+      const qH = parseInt(q.get("h"), 10); if (qH) S.heightPlusCm = qH;
+      const qVer = parseFloat(q.get("ver")); if (qVer > 0) S.veranda = qVer;
+      if (q.get("vt")) S.verandaType = q.get("vt");
+      if (q.get("tr") === "1") S.trailer = true;
+      const qBuild = q.get("build"); if (qBuild && qBuild !== "none") S.buildOnSite = qBuild;
+      if (q.get("city")) S.city = q.get("city");
+      const qKm = parseFloat(q.get("km")); if (qKm) { S.km = qKm; S.kmManual = true; S.kmSource = "километраж из ссылки"; }
+
+      buildForm(); syncVisibility(); bind();
+      const vs = $("#verandaSqm"); if (vs && S.veranda) vs.value = S.veranda;
+      const vtSel = $("#verandaType"); if (vtSel && S.verandaType) vtSel.value = S.verandaType;
+      const bsSel = $("#buildSelect"); if (bsSel && S.buildOnSite !== "none") bsSel.value = S.buildOnSite;
+      const ci = $("#cityInput"); if (ci && S.city) ci.value = S.city;
+      const kmi = $("#kmManual"); if (kmi && S.km) kmi.value = S.km;
+      render();
     } catch (e) {
       console.error("Ошибка инициализации калькулятора", e);
     }

@@ -18,7 +18,7 @@
 }
 
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth; overflow-x:clip}
 body{
   margin:0; font-family:var(--ff-sans); color:var(--ink);
   background:
@@ -26,7 +26,7 @@ body{
     radial-gradient(900px 500px at -10% 20%, #F7F0E2 0%, rgba(247,240,226,0) 55%),
     var(--cream);
   line-height:1.62; font-size:17px; -webkit-font-smoothing:antialiased;
-  overflow-x:hidden;
+  position:relative; overflow-x:hidden; overflow-x:clip;
 }
 img{max-width:100%; display:block}
 a{color:var(--amber); text-decoration:none}

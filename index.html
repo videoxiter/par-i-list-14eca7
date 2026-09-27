@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="description" content="Калькулятор бани-бочки от производителя: выберите модель, комплектацию и город — получите стоимость с доставкой.">
 <title>Калькулятор бани-бочки — производство Ижевск</title>
-<link rel="stylesheet" href="assets/css/style.css?v=4">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 </head>
 <body>
@@ -31,8 +31,8 @@
         <a class="btn ghost" href="catalog.html">Модели и цены</a>
       </div>
       <div class="hero-badges">
-        <span class="badge"><b>от 150 000 ₽</b> за баню 2×2 м</span>
-        <span class="badge">Доставка <b>70 ₽/км</b> + 2 000 ₽</span>
+        <span class="badge"><b>от 145 000 ₽</b> за баню 2×2 м</span>
+        <span class="badge">Доставка <b>от 65 ₽/км</b> + 2 000 ₽</span>
         <span class="badge">Оплата <b>после установки</b></span>
         <span class="badge"><b data-count="25" data-suffix="+ лет">25+ лет</b> срок службы</span>
       </div>
@@ -78,19 +78,21 @@
 
         <h3 class="mt1">2. Размер и планировка</h3>
         <div class="field" id="extraLenWrap">
-          <label for="extraLen">Добавить длины (13 000 ₽ за 0,5 м)</label>
+          <label for="extraLen">Добавить длины (13 000 ₽ за 0,5 м — один раз)</label>
           <select id="extraLen">
             <option value="0">Не нужно</option>
             <option value="1">+0,5 м — 13 000 ₽</option>
-            <option value="2">+1,0 м — 26 000 ₽</option>
-            <option value="3">+1,5 м — 39 000 ₽</option>
           </select>
+          <div class="hint">Удлинить можно только один раз. Дальше берётся следующий размер по прайсу:
+            например 3×2 — 175 000 ₽, с +0,5 м — 188 000 ₽, а дальше уже 4×2 — 210 000 ₽.</div>
         </div>
         <div class="field" id="extraSectionWrap">
           <label class="opt"><input type="checkbox" id="extraSection">
             <span>Дополнительное отделение (от 5 м)</span><span class="p">15 000 ₽</span></label>
           <div class="hint">Три отделения: комната отдыха, помывочная, парная.</div>
         </div>
+        <div class="field" id="widthPlusWrap"></div>
+        <div class="field" id="heightPlusWrap"></div>
         <div class="field" id="trailerWrap">
           <label class="opt"><input type="checkbox" id="trailerChk">
             <span>Баня на прицепе «БАРС» 3,5×1,5 м</span><span class="p">120 000 ₽</span></label>
@@ -100,7 +102,7 @@
         </div>
 
         <details class="adv">
-          <summary>Веранда (терраса) — 13 500 ₽/м²</summary>
+          <summary>Терраса — от 7 000 ₽/м²</summary>
           <div class="field">
             <label for="verandaSqm">Площадь веранды, м²</label>
             <input type="number" id="verandaSqm" min="0" max="40" step="1" value="0" placeholder="например 8">
@@ -108,8 +110,10 @@
           <div class="field">
             <label for="verandaType">Тип крыши веранды</label>
             <select id="verandaType">
-              <option value="roof">Двускатная крыша — 13 500 ₽/м²</option>
-              <option value="wall">Крыша до стены бани — 13 000 ₽/м²</option>
+              <option value="terrace">Двускатная крыша, баня под крышей — 13 500 ₽/м²</option>
+              <option value="wall">Односкатная крыша, навес с одной стороны — 13 000 ₽/м²</option>
+              <option value="open">Без крыши: подиум и ограждение — 9 000 ₽/м²</option>
+              <option value="podium">Подиум без крыши и ограждения — 7 000 ₽/м²</option>
             </select>
           </div>
         </details>
@@ -192,7 +196,7 @@
     </div>
     <div class="table-wrap reveal">
       <table class="data" id="popularTable">
-        <thead><tr><th>Город</th><th>Км от Ижевска</th><th>Доставка (70 ₽/км)</th><th>Доставка (75 ₽/км)</th></tr></thead>
+        <thead><tr><th>Город</th><th>Км от Ижевска</th><th>Доставка (65 ₽/км)</th><th>Доставка (70 ₽/км)</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
@@ -238,12 +242,12 @@
         <ul class="steps">
           <li>Строим маршрут от производства (Ижевск, ул. Пойма, 32) до вашего населённого пункта.</li>
           <li>Берём вариант <b>без платных участков</b>; если бесплатных несколько — наименьший километраж.</li>
-          <li>Умножаем километраж на тариф: 70 ₽/км до 1 000 км, 75 ₽/км свыше (до 1 апреля — 65 ₽/км).</li>
+          <li>Умножаем километраж на тариф: 65 ₽/км до 1 000 км, 70 ₽/км свыше 1 000 км.</li>
           <li>Прибавляем 2 000 ₽ — подача и строповка.</li>
         </ul>
-        <div class="note warm"><b>Пример:</b> Казань — 362 км × 70 ₽ + 2 000 ₽ = <b>27 340 ₽</b>.
+        <div class="note warm"><b>Пример:</b> Казань — 362 км × 65 ₽ + 2 000 ₽ = <b>25 530 ₽</b>.
           Туда же, где нет подъезда для манипулятора, вместо доставки в собранном виде считаем сборку на участке:
-          «Квадро» — 10 000 ₽, «Танк»/«Овал» — 15 000 ₽, с террасой — 25 000 ₽.</div>
+          «Квадро» — 15 000 ₽ (1 день), «Танк»/«Овал» — 20 000 ₽ (2 дня), с террасой — 30 000 ₽ (2 дня).</div>
       </div>
       <div class="reveal d1">
         <h2>Что спрашивает менеджер</h2>
@@ -274,12 +278,12 @@
 </section>
 
 <script>window.__ASSETS_V = 1;</script>
-<script src="assets/js/config.js?v=4"></script>
-<script src="assets/js/data.js?v=4"></script>
-<script src="assets/js/layout.js?v=4"></script>
-<script src="assets/js/geo.js?v=4"></script>
-<script src="assets/js/app.js?v=4"></script>
-<script src="assets/js/calc.js?v=4"></script>
+<script src="assets/js/config.js?v=7"></script>
+<script src="assets/js/data.js?v=7"></script>
+<script src="assets/js/layout.js?v=7"></script>
+<script src="assets/js/geo.js?v=7"></script>
+<script src="assets/js/app.js?v=7"></script>
+<script src="assets/js/calc.js?v=7"></script>
 <script>
 /* таблица популярных направлений */
 (function(){
@@ -295,8 +299,8 @@
     const x = d[c]; if (!x || !x["км"]) return "";
     const km = x["км"];
     return `<tr><td>${c}</td><td class="num">${km} км</td>
-      <td class="num">${rub(km*70+2000)}</td>
-      <td class="num">${km>1000 ? rub(km*75+2000) : "—"}</td></tr>`;
+      <td class="num">${rub(km*65+2000)}</td>
+      <td class="num">${km>1000 ? rub(km*70+2000) : "—"}</td></tr>`;
   }).join("");
 })();
 </script>

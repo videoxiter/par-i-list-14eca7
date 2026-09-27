@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <title>Доставка, монтаж и баня на прицепе — тарифы и правила</title>
-<link rel="stylesheet" href="assets/css/style.css?v=4">
+<link rel="stylesheet" href="assets/css/style.css?v=7">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 </head>
 <body>
@@ -28,9 +28,8 @@
         <div class="table-wrap"><table class="data">
           <thead><tr><th>Километраж</th><th>Тариф</th><th>Плюс фикс.</th></tr></thead>
           <tbody>
-            <tr><td>до 1 000 км</td><td class="num">70 ₽/км</td><td class="num">2 000 ₽</td></tr>
-            <tr><td>свыше 1 000 км</td><td class="num">75 ₽/км</td><td class="num">2 000 ₽</td></tr>
-            <tr><td>тариф до 1 апреля</td><td class="num">65 ₽/км</td><td class="num">2 000 ₽</td></tr>
+            <tr><td>до 1 000 км</td><td class="num">65 ₽/км</td><td class="num">2 000 ₽</td></tr>
+            <tr><td>свыше 1 000 км</td><td class="num">70 ₽/км</td><td class="num">2 000 ₽</td></tr>
           </tbody>
         </table></div>
         <div class="note warm mt2"><b>Как считаем:</b> строим маршрут от производства (Ижевск, ул. Пойма, 32) до вашего
@@ -60,14 +59,16 @@
         <h3>Доставка + сборка на участке</h3>
         <p class="small">Транспорт не повышенной проходимости, бригада собирает баню прямо на месте.
           Стоимость доставки считается отдельно, сборка оплачивается отдельно:
-          «Квадро» — <b>10 000 ₽</b> (1 день), «Танк»/«Овал» — <b>15 000 ₽</b> (2 дня), с террасой — <b>25 000 ₽</b> (2 дня).</p>
+          «Квадро» — <b>15 000 ₽</b> (1 день), «Танк»/«Овал» — <b>20 000 ₽</b> (2 дня), с террасой — <b>30 000 ₽</b> (2 дня).</p>
         <p class="small muted">Вся сумма прописана в договоре и оплачивается после установки единой суммой.
-          Нужно электричество для инструмента; жильё мастеров при двухдневной сборке — за наш счёт.</p>
+          Нужно электричество для инструмента; проживание мастеров при двухдневной сборке оплачивает и обеспечивает организация.</p>
       </div>
       <div class="card reveal d1"><span class="tag hot">Вариант 2</span>
         <h3>Доставка в собранном виде</h3>
-        <p class="small">Привозим готовую баню. Манипулятор для снятия с машины и установки на место нанимает
-          и оплачивает заказчик, водитель помогает поставить и отрегулировать. Бетонные блоки привозим вместе с баней.</p>
+        <p class="small">Привозим готовую баню на КамАЗе с открытым кузовом — если ширина бани <b>до 2,40 м</b>.
+          Манипулятор для снятия с машины и установки на постоянное место нанимает и оплачивает заказчик,
+          водитель помогает поставить и отрегулировать. Бетонные блоки привозим вместе с баней.
+          Всё, что шире 2,40 м, собирается на участке (вариант 1).</p>
         <p class="small muted">Нужен проезд для тяжёлой техники: без низких проводов, узких ворот, с местом для разворота.
           Габарит по ширине — до 2,40 м; шире — только сборка на месте.</p>
       </div>
@@ -151,10 +152,10 @@
   </div>
 </section>
 
-<script src="assets/js/config.js?v=4"></script>
-<script src="assets/js/data.js?v=4"></script>
-<script src="assets/js/layout.js?v=4"></script>
-<script src="assets/js/app.js?v=4"></script>
+<script src="assets/js/config.js?v=7"></script>
+<script src="assets/js/data.js?v=7"></script>
+<script src="assets/js/layout.js?v=7"></script>
+<script src="assets/js/app.js?v=7"></script>
 <script>
 (function(){
   const D = window.BANYA_DATA || {};
@@ -168,7 +169,7 @@
   const seen = {}; const rows = pick.filter(x => !seen[x.c] && (seen[x.c] = 1));
   const tb = document.querySelector("#distTable tbody");
   if (tb) tb.innerHTML = rows.map(x =>
-    `<tr><td>${x.c}</td><td class="num">${x.km} км</td><td class="num">${rub(x.km*(x.km>1000?75:70)+2000)}</td></tr>`).join("");
+    `<tr><td>${x.c}</td><td class="num">${x.km} км</td><td class="num">${rub(x.km*(x.km>1000?70:65)+2000)}</td></tr>`).join("");
 })();
 </script>
 </body>

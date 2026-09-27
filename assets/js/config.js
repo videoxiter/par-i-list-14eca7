@@ -7,7 +7,7 @@
 window.SITE_CONFIG = {
   YANDEX_API_KEY: "",
   // ставки за километр (соответствуют базе знаний)
-  tariffDefault: { to1000: 70, over1000: 75, legacy: 65 },
+  tariffDefault: { to1000: 65, over1000: 70 },
   fixedFee: 2000,
   origin: { name: "г. Ижевск, ул. Пойма, д. 32", lat: 56.8527, lon: 53.2042 },
   // если true — показывать блок «проверьте маршрут в Яндекс Навигаторе» всегда
