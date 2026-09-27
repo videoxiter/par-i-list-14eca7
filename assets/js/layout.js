@@ -6,6 +6,7 @@
     { href: "komplektacii.html", text: "Комплектации" },
     { href: "dostavka.html", text: "Доставка и монтаж" },
     { href: "galereya.html", text: "Галерея" },
+    { href: "otzyvy.html", text: "Отзывы" },
     { href: "faq.html", text: "Вопросы" },
     { href: "contacts.html", text: "Заказ и контакты" }
   ];

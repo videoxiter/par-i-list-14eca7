@@ -175,10 +175,51 @@ window.LB = (function () {
     });
   }
 
+  /* отзывы: превью на главной и полный список на странице отзывов */
+  function reviews() {
+    const prev = document.getElementById("reviewsPreview");
+    const all = document.getElementById("reviewsAll");
+    const summary = document.getElementById("reviewsSummary");
+    if (!prev && !all && !summary) return;
+    const pack = D.reviews || {};
+    const R = (pack.reviews || []).slice();
+    if (!R.length) return;
+    const esc = s => String(s == null ? "" : s)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const stars = n => "★".repeat(Math.max(0, Math.min(5, n || 5))) +
+                       "☆".repeat(5 - Math.max(0, Math.min(5, n || 5)));
+    const card = r => `<div class="card review">
+        <div class="stars" title="Оценка ${r.score} из 5">${stars(r.score)}</div>
+        <p class="rev-text">${esc(r.text)}</p>
+        ${r.answer ? `<p class="rev-answer"><b>Ответ продавца:</b> ${esc(r.answer)}</p>` : ""}
+        <p class="tiny muted">${esc(r.sender || "Покупатель")} · ${esc(r.date_fmt || r.date || "")}` +
+        `${r.item ? " · " + esc(r.item) : ""}</p></div>`;
+    if (summary) {
+      const s = pack.reviews_summary || {};
+      const avg = (s.avg_score || 5).toFixed(1).replace(".0", ",0");
+      summary.innerHTML =
+        `<span class="badge"><b>${avg} из 5</b> средняя оценка</span>` +
+        `<span class="badge"><b>${s.count || R.length}</b> отзывов</span>` +
+        `<span class="badge">Отвечаем на каждый отзыв</span>`;
+    }
+    if (all) {
+      const sorted = R.slice().sort((a, b) => (b.text || "").length - (a.text || "").length);
+      all.innerHTML = sorted.map(card).join("");
+    }
+    if (prev) {
+      const best = R.slice().sort((a, b) => {
+        const la = (a.text || "").length, lb = (b.text || "").length;
+        return lb - la;
+      }).slice(0, 3);
+      prev.innerHTML = best.map(card).join("");
+    }
+  }
+
   function init() {
     try { reveal(); } catch (e) { console.error(e); }
     try { gallery(); } catch (e) { console.error(e); }
     try { counters(); } catch (e) { console.error(e); }
+    try { reviews(); } catch (e) { console.error(e); }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
   else init();
