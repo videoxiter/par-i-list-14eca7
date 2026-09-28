@@ -362,11 +362,12 @@ footer.site li{margin-bottom:7px; font-size:.94rem}
   font-size:.9rem; color:var(--brown-soft)}
 .review .rev-answer b{color:var(--brown)}
 
-/* ── свайное поле ──────────────────────────────────────────────────────── */
-.pile-host{margin-top:10px; border:1px solid rgba(74,50,34,.14); border-radius:12px;
+/* ── свайное поле и планировка ─────────────────────────────────────────── */
+.pile-host,.plan-host{margin-top:10px; border:1px solid rgba(74,50,34,.14); border-radius:12px;
   overflow:hidden; background:#fffdf8}
-.pile-host svg{display:block; width:100%; height:auto}
+.pile-host svg,.plan-host svg{display:block; width:100%; height:auto}
+.plan-host{margin-bottom:6px}
 @media print{
   #pileBlock{break-inside:avoid; page-break-inside:avoid}
-  .pile-host{border-color:#bbb}
+  .pile-host,.plan-host{border-color:#bbb}
 }

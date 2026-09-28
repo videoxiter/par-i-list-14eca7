@@ -297,16 +297,39 @@
 
   /* Монтаж: баня с верандой шире 2,40 м, поэтому её везём только сборкой на участке.
      При выборе веранды подставляем подходящий вариант сборки, при отказе — убираем. */
-  /* Свайное поле: рисуем схему под текущую баню и даём менеджеру размеры для заказчика. */
-  function drawPileField() {
-    const host = $("#pileHost");
-    if (!host || !window.PILE) return;
+  /* Схемы: планировка + свайное поле под текущую конфигурацию — приложение к договору. */
+  function schematicOptions() {
     const m = isTank() ? null : model();
-    const len = isTank() ? S.tankLen : m.length + S.extraLen * 0.5;
-    const wid = isTank() ? D.tank.width : m.width + S.widthPlusCm / 100;
+    const kit = D.kits[S.kit] || {};
     const raw = ($("#pileSections") && $("#pileSections").value) || "";
     const sections = raw.split(/[\s,;]+/).map(x => parseFloat(x.replace(",", "."))).filter(x => x > 0);
-    window.PILE.render(host, { len: len, wid: wid, form: isTank() ? "tank" : "quadro", sections: sections });
+    const opts = Object.keys(S.options).filter(k => S.options[k]);
+    const has = t => opts.some(o => o.indexOf(t) >= 0);
+    let zones = isTank() ? 2 : (S.kit === "премиум" ? 3 : 2);
+    if (m && m.id === "k2") zones = 1;
+    if (S.extraSection) zones += 1;
+    return {
+      len: isTank() ? S.tankLen : m.length + S.extraLen * 0.5,
+      wid: isTank() ? D.tank.width : m.width + S.widthPlusCm / 100,
+      form: isTank() ? "tank" : "quadro",
+      kitName: KIT_TITLES[S.kit], zones: zones, sections: sections,
+      polki: true,
+      runbook: !!(kit["рундуки"] && kit["рундуки"] !== "нет"),
+      shkaf: has("Шкаф"),
+      stol: !!((kit["стол"] && kit["стол"] !== "нет") || has("Стол")),
+      win600: (String(kit["окна"] || "").indexOf("600") >= 0) || has("600×600") || has("600x600"),
+      win300: String(kit["окна"] || "").indexOf("300") >= 0,
+      heaterOutside: has("Топка с улицы"),
+      equipment: window.PLAN ? window.PLAN.equipmentList(kit, opts) : []
+    };
+  }
+
+  function drawSchematics() {
+    const o = schematicOptions();
+    const ph = $("#planHost");
+    if (ph && window.PLAN) window.PLAN.render(ph, o);
+    const plh = $("#pileHost");
+    if (plh && window.PILE) window.PILE.render(plh, o);
   }
 
   function pileText() {
@@ -364,7 +387,7 @@
       }
     }
     syncUrl();
-    drawPileField();
+    drawSchematics();
     if (brk) {
       let html = r.rows.map(x =>
         `<tr><td>${x.label}${x.note ? '<span class="note">' + x.note + "</span>" : ""}</td>
@@ -553,15 +576,30 @@
       }
     });
 
-    // свайное поле: пересчёт при вводе отсеков и кнопки скачивания/копирования
+    // схемы для договора: пересчёт при вводе отсеков и кнопки скачивания/копирования
     const ps = $("#pileSections");
-    if (ps) ps.addEventListener("input", () => { drawPileField(); });
+    if (ps) ps.addEventListener("input", () => { drawSchematics(); });
+    const sizeTag = () => {
+      const m = isTank() ? null : model();
+      const len = isTank() ? S.tankLen : m.length + S.extraLen * 0.5;
+      const wid = isTank() ? D.tank.width : m.width + S.widthPlusCm / 100;
+      return (isTank() ? "tank" : m.id) + "-" + String(len).replace(".", ",") + "x" + String(wid).replace(".", ",") + "-" + S.kit;
+    };
     const pd = $("#pileDownload");
     if (pd) pd.addEventListener("click", () => {
-      if (!window.PILE) return;
-      const nm = "svaynoe-pole-" + (isTank() ? "tank-" + S.tankLen : model().id) + "-" +
-                 (isTank() ? D.tank.width : model().width + S.widthPlusCm / 100);
-      window.PILE.download(nm.replace(/\./g, ","));
+      if (window.PILE) window.PILE.download("svaynoe-pole-" + sizeTag());
+    });
+    const pld = $("#planDownload");
+    if (pld) pld.addEventListener("click", () => {
+      if (window.PLAN) window.PLAN.download("plan", "planirovka-" + sizeTag());
+    });
+    const sd = $("#sheetDownload");
+    if (sd) sd.addEventListener("click", () => {
+      if (!window.PLAN || !window.PILE) return;
+      const o = schematicOptions();
+      const pileSvg = window.PILE.build(o).svg;
+      const sheet = window.PLAN.sheetSvg(Object.assign({}, o, { pileSvg: pileSvg }));
+      window.PLAN.downloadSvg(sheet, "shema-dlya-dogovora-" + sizeTag());
     });
     const pc = $("#pileCopy");
     if (pc) pc.addEventListener("click", () => {
