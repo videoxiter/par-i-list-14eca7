@@ -20,7 +20,7 @@
     modelId: "k4", kit: "люкс", material: "ель", tankLen: 4, extraLen: 0, extraSection: false,
     widthPlusCm: 0, heightPlusCm: 0,
     trailer: false, straps: false, veranda: 0, verandaType: "terrace", options: {},
-    buildOnSite: "none", city: "", km: null, kmSource: "", kmManual: null, tariffMode: "auto",
+    buildOnSite: "none", buildAuto: false, city: "", km: null, kmSource: "", kmManual: null, tariffMode: "auto",
     loading: false
   };
 
@@ -201,11 +201,12 @@
       if (S.straps) rows.push({ label: "Три стропы", note: "по 2 000 ₽", value: 6000 });
     }
     // сборка на участке
-    const buildPrices = { quadro: 15000, tank: 20000, terrace: 30000 };
+    const buildPrices = { quadro: 10000, quadro_veranda: 25000, tank: 25000, tank_veranda: 35000 };
     if (S.buildOnSite !== "none") {
-      const names = { quadro: "Сборка на участке, форма «Квадро» (1 день)",
-                      tank: "Сборка на участке, форма «Танк»/«Овал» (2 дня)",
-                      terrace: "Сборка на участке, баня с террасой (2 дня)" };
+      const names = { quadro: "Сборка на участке, «Квадро» (1 день)",
+                      quadro_veranda: "Сборка на участке, «Квадро» с верандой (2 дня)",
+                      tank: "Сборка на участке, «Танк»/«Овал» (2 дня)",
+                      tank_veranda: "Сборка на участке, «Танк»/«Овал» с верандой (2 дня)" };
       rows.push({ label: names[S.buildOnSite], value: buildPrices[S.buildOnSite] });
     }
     // доставка
@@ -294,8 +295,25 @@
       `Доставка по всей России, оплата после установки и приёмки на вашем участке.`;
   }
 
+  /* Монтаж: баня с верандой шире 2,40 м, поэтому её везём только сборкой на участке.
+     При выборе веранды подставляем подходящий вариант сборки, при отказе — убираем. */
+  function applyBuildAuto() {
+    const tank = isTank();
+    const veranda = S.veranda > 0;
+    if (veranda && tank && (S.buildOnSite === "none" || S.buildOnSite === "tank")) {
+      S.buildOnSite = "tank_veranda"; S.buildAuto = true;
+    } else if (veranda && !tank && (S.buildOnSite === "none" || S.buildOnSite === "quadro")) {
+      S.buildOnSite = "quadro_veranda"; S.buildAuto = true;
+    } else if (!veranda && S.buildAuto) {
+      S.buildOnSite = "none"; S.buildAuto = false;
+    }
+    const sel = $("#buildSelect");
+    if (sel && sel.value !== S.buildOnSite) sel.value = S.buildOnSite;
+  }
+
   /* ── вывод ────────────────────────────────────────────────────────────── */
   function render() {
+    applyBuildAuto();
     const r = compute();
     const sumEl = $("#sumValue"), brk = $("#breakdown"), chars = $("#chars"),
           ad = $("#adText"), gal = $("#resultGallery"), inсл = $("#kitBullets");
@@ -414,9 +432,10 @@
 
     const bs = $("#buildSelect");
     bs.innerHTML = `<option value="none">Не нужна (доставка в собранном виде)</option>
-      <option value="quadro">Квадро — 15 000 ₽ (1 день)</option>
-      <option value="tank">Танк / Овал — 20 000 ₽ (2 дня)</option>
-      <option value="terrace">С террасой — 30 000 ₽ (2 дня)</option>`;
+      <option value="quadro">Квадро — 10 000 ₽ (1 день)</option>
+      <option value="quadro_veranda">Квадро с верандой — 25 000 ₽ (2 дня)</option>
+      <option value="tank">Танк / Овал — 25 000 ₽ (2 дня)</option>
+      <option value="tank_veranda">Танк / Овал с верандой — 35 000 ₽ (2 дня)</option>`;
   }
 
   function renderKits() {
