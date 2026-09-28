@@ -354,11 +354,19 @@ footer.site li{margin-bottom:7px; font-size:.94rem}
 }
 
 /* ── отзывы ────────────────────────────────────────────────────────────── */
-.card.review{display:flex; flex-direction:column; gap:8px}
-.review .stars{color:var(--honey); font-size:1.15rem; letter-spacing:2px}
+.card.review{display:flex; flex-direction:column; gap:8px}.review .stars{color:var(--honey); font-size:1.15rem; letter-spacing:2px}
 .review .rev-text{margin:0; color:var(--ink); font-size:.97rem; position:relative; padding-left:18px}
 .review .rev-text::before{content:"«"; position:absolute; left:0; top:-6px; font-family:var(--ff-serif);
   font-size:2rem; color:var(--honey); line-height:1}
 .review .rev-answer{margin:0; padding:10px 12px; background:#F7F4EC; border-radius:10px;
   font-size:.9rem; color:var(--brown-soft)}
 .review .rev-answer b{color:var(--brown)}
+
+/* ── свайное поле ──────────────────────────────────────────────────────── */
+.pile-host{margin-top:10px; border:1px solid rgba(74,50,34,.14); border-radius:12px;
+  overflow:hidden; background:#fffdf8}
+.pile-host svg{display:block; width:100%; height:auto}
+@media print{
+  #pileBlock{break-inside:avoid; page-break-inside:avoid}
+  .pile-host{border-color:#bbb}
+}

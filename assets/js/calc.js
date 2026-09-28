@@ -297,6 +297,34 @@
 
   /* Монтаж: баня с верандой шире 2,40 м, поэтому её везём только сборкой на участке.
      При выборе веранды подставляем подходящий вариант сборки, при отказе — убираем. */
+  /* Свайное поле: рисуем схему под текущую баню и даём менеджеру размеры для заказчика. */
+  function drawPileField() {
+    const host = $("#pileHost");
+    if (!host || !window.PILE) return;
+    const m = isTank() ? null : model();
+    const len = isTank() ? S.tankLen : m.length + S.extraLen * 0.5;
+    const wid = isTank() ? D.tank.width : m.width + S.widthPlusCm / 100;
+    const raw = ($("#pileSections") && $("#pileSections").value) || "";
+    const sections = raw.split(/[\s,;]+/).map(x => parseFloat(x.replace(",", "."))).filter(x => x > 0);
+    window.PILE.render(host, { len: len, wid: wid, form: isTank() ? "tank" : "quadro", sections: sections });
+  }
+
+  function pileText() {
+    const host = $("#pileHost");
+    if (!host || !window.PILE) return "";
+    const b = window.PILE.build({
+      len: isTank() ? S.tankLen : model().length + S.extraLen * 0.5,
+      wid: isTank() ? D.tank.width : model().width + S.widthPlusCm / 100,
+      form: isTank() ? "tank" : "quadro",
+      sections: ((($("#pileSections") || {}).value) || "").split(/[\s,;]+/)
+        .map(x => parseFloat(x.replace(",", "."))).filter(x => x > 0)
+    });
+    return `Свайное поле под баню ${isTank() ? "Танк " + S.tankLen : ""}${isTank() ? "" : model().name}:\n` +
+      `Основание: ${b.baseL} × ${b.baseW} мм (короче бани на 200 мм с каждой стороны)\n` +
+      `Сваи: ${b.xs} по длине × ${b.ys} по ширине = ${b.xs * b.ys} шт., шаг ${Math.round(b.baseL / (b.xs - 1))} мм \n` +
+      `Свая — труба ø76 мм. Схему пришлём файлом.`;
+  }
+
   function applyBuildAuto() {
     const tank = isTank();
     const veranda = S.veranda > 0;
@@ -336,6 +364,7 @@
       }
     }
     syncUrl();
+    drawPileField();
     if (brk) {
       let html = r.rows.map(x =>
         `<tr><td>${x.label}${x.note ? '<span class="note">' + x.note + "</span>" : ""}</td>
@@ -522,6 +551,25 @@
         else { S.km = null; }
         render();
       }
+    });
+
+    // свайное поле: пересчёт при вводе отсеков и кнопки скачивания/копирования
+    const ps = $("#pileSections");
+    if (ps) ps.addEventListener("input", () => { drawPileField(); });
+    const pd = $("#pileDownload");
+    if (pd) pd.addEventListener("click", () => {
+      if (!window.PILE) return;
+      const nm = "svaynoe-pole-" + (isTank() ? "tank-" + S.tankLen : model().id) + "-" +
+                 (isTank() ? D.tank.width : model().width + S.widthPlusCm / 100);
+      window.PILE.download(nm.replace(/\./g, ","));
+    });
+    const pc = $("#pileCopy");
+    if (pc) pc.addEventListener("click", () => {
+      const t = pileText();
+      try { navigator.clipboard && navigator.clipboard.writeText(t); } catch (e) {}
+      const old = pc.textContent;
+      pc.textContent = "Скопировано ✓";
+      setTimeout(() => { pc.textContent = old; }, 2000);
     });
 
     // подсказки населённого пункта

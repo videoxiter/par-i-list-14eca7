@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <meta name="description" content="Калькулятор бани-бочки от производителя: выберите модель, комплектацию и город — получите стоимость с доставкой.">
 <title>Калькулятор бани-бочки — производство Ижевск</title>
-<link rel="stylesheet" href="assets/css/style.css?v=8">
+<link rel="stylesheet" href="assets/css/style.css?v=10">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 </head>
 <body>
@@ -175,6 +175,22 @@
           <p id="adText" class="small" style="margin:0"></p>
         </div>
 
+        <div class="card-mini" id="pileBlock">
+          <h4>Свайное поле — отдать заказчику</h4>
+          <p class="tiny muted" style="margin:0 0 8px">Если баня ставится на свои сваи — вот схема и размеры.
+            Основание короче бани на 20 см с каждой стороны, шаг свай не более 1 000 мм, свая — труба ø76 мм.</p>
+          <div class="field">
+            <label for="pileSections">Отсеки, м (через пробел) — необязательно</label>
+            <input type="text" id="pileSections" placeholder="например: 2.5 1.5">
+            <div class="hint">Ряды свай добавляются под перегородками отсеков — «сваи бьются под отсеки».</div>
+          </div>
+          <div class="pile-host" id="pileHost"></div>
+          <div class="center mt1 no-print">
+            <button class="btn ghost sm" type="button" id="pileDownload">Скачать схему (SVG)</button>
+            <button class="btn ghost sm" type="button" id="pileCopy">Скопировать размеры</button>
+          </div>
+        </div>
+
         <div class="hero-cta no-print">
           <button class="btn" id="btnPrint" type="button">Распечатать / PDF</button>
           <button class="btn ghost" id="btnCopy" type="button">Скопировать расчёт</button>
@@ -279,12 +295,13 @@
 </section>
 
 <script>window.__ASSETS_V = 1;</script>
-<script src="assets/js/config.js?v=8"></script>
-<script src="assets/js/data.js?v=8"></script>
-<script src="assets/js/layout.js?v=8"></script>
-<script src="assets/js/geo.js?v=8"></script>
-<script src="assets/js/app.js?v=8"></script>
-<script src="assets/js/calc.js?v=8"></script>
+<script src="assets/js/config.js?v=10"></script>
+<script src="assets/js/data.js?v=10"></script>
+<script src="assets/js/layout.js?v=10"></script>
+<script src="assets/js/pile.js?v=10"></script>
+<script src="assets/js/geo.js?v=10"></script>
+<script src="assets/js/app.js?v=10"></script>
+<script src="assets/js/calc.js?v=10"></script>
 <script>
 /* таблица популярных направлений */
 (function(){
