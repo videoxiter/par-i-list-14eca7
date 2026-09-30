@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
 <title>Модели и цены бань-бочек — Квадро, Танк, Овал, веранда, прицеп</title>
-<link rel="stylesheet" href="assets/css/style.css?v=19">
+<link rel="stylesheet" href="assets/css/style.css?v=18">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 </head>
 <body>
@@ -80,7 +80,7 @@
           <b>9 000 ₽/м²</b> — подиум с ограждением;
           <b>7 000 ₽/м²</b> — подиум без ограждения. Любой размер.
           Сборка бани с террасой на участке — 25 000 ₽ (2 дня, любая форма).
-          Сборка «Квадро»: до 2,5 м — 10 000 ₽ (1 день), 2,5–3,5 м — 15 000 ₽ (1 день); «Танк»/«Овал» — 15 000 ₽ (2 дня).
+          Сборка «Квадро»: до 2,5 м — 10 000 ₽, 2,5–3,5 м — 15 000 ₽; «Танк»/«Овал» — 15 000 ₽.
           Свыше 1 000 км к сборке автоматически +5 000 ₽.</p>
         <a class="btn ghost sm" href="index.html#calc">Посчитать с верандой</a>
       </div>
@@ -117,10 +117,10 @@
   </div>
 </section>
 
-<script src="assets/js/config.js?v=19"></script>
-<script src="assets/js/data.js?v=19"></script>
-<script src="assets/js/layout.js?v=19"></script>
-<script src="assets/js/app.js?v=19"></script>
+<script src="assets/js/config.js?v=18"></script>
+<script src="assets/js/data.js?v=18"></script>
+<script src="assets/js/layout.js?v=18"></script>
+<script src="assets/js/app.js?v=18"></script>
 <script>
 (function(){
   const D = window.BANYA_DATA || {};

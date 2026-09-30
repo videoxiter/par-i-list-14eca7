@@ -207,7 +207,7 @@
     if (S.buildOnSite !== "none") {
       const buildPrices = { quadro: 10000, quadro_wide: 15000, tank: 15000, terrace: 25000 };
       const names = { quadro: "Сборка на участке, «Квадро» до 2,5 м (1 день)",
-                      quadro_wide: "Сборка на участке, «Квадро» 2,5–3,5 м (1 день)",
+                      quadro_wide: "Сборка на участке, «Квадро» 2,5–3,5 м",
                       tank: "Сборка на участке, «Танк»/«Овал» (2 дня)",
                       terrace: "Сборка на участке, баня с террасой (2 дня)" };
       const price = buildPrices[S.buildOnSite];
@@ -496,7 +496,7 @@
     const bs = $("#buildSelect");
     bs.innerHTML = `<option value="none">Не нужна (доставка в собранном виде)</option>
       <option value="quadro">«Квадро» до 2,5 м — 10 000 ₽ (1 день)</option>
-      <option value="quadro_wide">«Квадро» 2,5–3,5 м — 15 000 ₽ (1 день)</option>
+      <option value="quadro_wide">«Квадро» 2,5–3,5 м — 15 000 ₽</option>
       <option value="tank">«Танк»/«Овал» — 15 000 ₽ (2 дня)</option>
       <option value="terrace">Баня с террасой — 25 000 ₽ (2 дня)</option>`;
   }
