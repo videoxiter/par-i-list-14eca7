@@ -201,14 +201,22 @@
       rows.push({ label: "Прицеп «БАРС» 3,5×1,5 м", note: "усиленный двухосный, 100 % предоплата", value: D.trailer.price });
       if (S.straps) rows.push({ label: "Три стропы", note: "по 2 000 ₽", value: 6000 });
     }
-    // сборка на участке
-    const buildPrices = { quadro: 10000, quadro_veranda: 25000, tank: 25000, tank_veranda: 35000 };
+    // сборка на участке (решение заказчика 30.09.2026):
+    // «Квадро» до 2,5 м — 10 000 ₽; «Квадро» 2,5–3,5 м — 15 000 ₽; «Танк»/«Овал» — 15 000 ₽;
+    // баня с террасой — 25 000 ₽; свыше 1 000 км к сборке автоматически +5 000 ₽
     if (S.buildOnSite !== "none") {
-      const names = { quadro: "Сборка на участке, «Квадро» (1 день)",
-                      quadro_veranda: "Сборка на участке, «Квадро» с верандой (2 дня)",
+      const buildPrices = { quadro: 10000, quadro_wide: 15000, tank: 15000, terrace: 25000 };
+      const names = { quadro: "Сборка на участке, «Квадро» до 2,5 м (1 день)",
+                      quadro_wide: "Сборка на участке, «Квадро» 2,5–3,5 м",
                       tank: "Сборка на участке, «Танк»/«Овал» (2 дня)",
-                      tank_veranda: "Сборка на участке, «Танк»/«Овал» с верандой (2 дня)" };
-      rows.push({ label: names[S.buildOnSite], value: buildPrices[S.buildOnSite] });
+                      terrace: "Сборка на участке, баня с террасой (2 дня)" };
+      const price = buildPrices[S.buildOnSite];
+      if (price) rows.push({ label: names[S.buildOnSite] || "Сборка на участке", value: price });
+      const far = (D.delivery && D.delivery.assembly_long_distance) || { "от_км": 1000, "надбавка": 5000 };
+      if (S.km && S.km > (far["от_км"] || 1000)) {
+        rows.push({ label: "Сборка: надбавка за расстояние свыше 1 000 км",
+                    note: `${S.km} км — автоматически`, value: far["надбавка"] || 5000 });
+      }
     }
     // доставка
     let deliv = null;
@@ -352,12 +360,14 @@
   function applyBuildAuto() {
     const tank = isTank();
     const veranda = S.veranda > 0;
-    if (veranda && tank && (S.buildOnSite === "none" || S.buildOnSite === "tank")) {
-      S.buildOnSite = "tank_veranda"; S.buildAuto = true;
-    } else if (veranda && !tank && (S.buildOnSite === "none" || S.buildOnSite === "quadro")) {
-      S.buildOnSite = "quadro_veranda"; S.buildAuto = true;
+    if (veranda && ["none", "quadro", "quadro_wide", "tank"].indexOf(S.buildOnSite) >= 0) {
+      S.buildOnSite = "terrace"; S.buildAuto = true;
     } else if (!veranda && S.buildAuto) {
       S.buildOnSite = "none"; S.buildAuto = false;
+    }
+    // «Квадро»: тариф сборки зависит от ширины (до 2,5 м — 10 000 ₽, 2,5–3,5 м — 15 000 ₽)
+    if (!tank && !veranda && (S.buildOnSite === "quadro" || S.buildOnSite === "quadro_wide")) {
+      S.buildOnSite = (model().width + S.widthPlusCm / 100) > 2.5 ? "quadro_wide" : "quadro";
     }
     const sel = $("#buildSelect");
     if (sel && sel.value !== S.buildOnSite) sel.value = S.buildOnSite;
@@ -485,10 +495,10 @@
 
     const bs = $("#buildSelect");
     bs.innerHTML = `<option value="none">Не нужна (доставка в собранном виде)</option>
-      <option value="quadro">Квадро — 10 000 ₽ (1 день)</option>
-      <option value="quadro_veranda">Квадро с верандой — 25 000 ₽ (2 дня)</option>
-      <option value="tank">Танк / Овал — 25 000 ₽ (2 дня)</option>
-      <option value="tank_veranda">Танк / Овал с верандой — 35 000 ₽ (2 дня)</option>`;
+      <option value="quadro">«Квадро» до 2,5 м — 10 000 ₽ (1 день)</option>
+      <option value="quadro_wide">«Квадро» 2,5–3,5 м — 15 000 ₽</option>
+      <option value="tank">«Танк»/«Овал» — 15 000 ₽ (2 дня)</option>
+      <option value="terrace">Баня с террасой — 25 000 ₽ (2 дня)</option>`;
   }
 
   function renderKits() {
@@ -741,7 +751,11 @@
       const qVer = parseFloat(q.get("ver")); if (qVer > 0) S.veranda = qVer;
       if (q.get("vt")) S.verandaType = q.get("vt");
       if (q.get("tr") === "1") S.trailer = true;
-      const qBuild = q.get("build"); if (qBuild && qBuild !== "none") S.buildOnSite = qBuild;
+      const qBuild = q.get("build");
+      if (qBuild && qBuild !== "none") {
+        // старые ссылки: раздельные варианты с верандой заменены общим «с террасой»
+        S.buildOnSite = ({ quadro_veranda: "terrace", tank_veranda: "terrace" })[qBuild] || qBuild;
+      }
       if (q.get("city")) S.city = q.get("city");
       const qKm = parseFloat(q.get("km")); if (qKm) { S.km = qKm; S.kmManual = true; S.kmSource = "километраж из ссылки"; }
 
